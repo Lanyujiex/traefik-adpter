@@ -8,7 +8,7 @@ RUN go env -w GOPROXY=https://goproxy.cn,direct
 
 RUN go build -o traefik-adapter .
 
-FROM debian:buster-slim
+FROM busybox:latest
 
 WORKDIR /app
 
