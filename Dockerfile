@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN go env -w GOPROXY=https://goproxy.cn,direct
+RUN go env -w GOPROXY=https://goproxy.cn,direct && go mod tidy
 
 RUN go build -o traefik-adapter .
 
