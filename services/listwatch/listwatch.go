@@ -90,6 +90,10 @@ func ListIngress(stopCh chan struct{}) {
 
 func PatchIngressRewriteRoot(clientset *kubernetes.Clientset, opIngress *networkingv1.Ingress) {
 	newAnnotatins := opIngress.Annotations
+	if newAnnotatins == nil {
+		newAnnotatins = map[string]string{}
+		opIngress.Annotations = newAnnotatins
+	}
 	namespace := opIngress.Namespace
 	if _, ok := newAnnotatins[IngressPathStriKey]; !ok {
 		return
@@ -105,6 +109,12 @@ func PatchIngressRewriteRoot(clientset *kubernetes.Clientset, opIngress *network
 			log.Println(err)
 			return
 		}
+		if middleValue == "" {
+			middleValue = rewriteRoot
+		} else {
+			middleValue = fmt.Sprintf("%s,%s", middleValue, rewriteRoot)
+		}
+		opIngress.Annotations[IngressMiddleWareKey] = middleValue
 		_, err = clientset.NetworkingV1().Ingresses(namespace).Update(context.Background(), opIngress, metav1.UpdateOptions{})
 		if err != nil {
 			log.Println(err)

@@ -59,7 +59,7 @@ func CreateRewriteMiddleware(namespace string, path string, config *rest.Config)
 		return err
 	}
 	_, err = traefikClient.TraefikV1alpha1().Middlewares(namespace).Create(context.Background(), &mid, metav1.CreateOptions{})
-	if err != nil && errors.IsAlreadyExists(err) {
+	if err != nil && !errors.IsAlreadyExists(err) {
 		log.Printf("Error creatingrewrite-root Middleware failed: %s\n", err.Error())
 		return err
 	}

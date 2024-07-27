@@ -37,7 +37,7 @@ kind: ClusterRole
 metadata:
   name: traefik-adapter-role
 rules:
-  - apiGroups: [""]
+  - apiGroups: ["networking.k8s.io"]
     resources: [ "ingresses"]
     verbs: ["get", "list", "watch", "create", "update", "delete"]
   - apiGroups: ["traefik.io"]
@@ -52,6 +52,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: traefik-adapter-sa
+    namespace: <your-namespace>
 roleRef:
   kind: ClusterRole
   name: traefik-adapter-role

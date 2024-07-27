@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-test
-  annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: nginx-rewrite-root@kubernetescrd
 spec:
   replicas: 1
   selector:
@@ -55,7 +53,7 @@ kind: Ingress
 metadata:
   name: nginx-ingress
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: nginx-rewrite-root@kubernetescrd
+    traefik.ingress.kubernetes.io/rule-type: PathPrefixStrip
 spec:
   rules:
     - host: local.nginx.com
