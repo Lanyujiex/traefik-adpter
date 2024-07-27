@@ -22,6 +22,7 @@ import (
 
 const (
 	IngressPathStriKey   = "traefik.ingress.kubernetes.io/rule-type"
+	IngressPathStriV1Key = "traefik.frontend.rule.type"
 	PathPrefixStripValue = "PathPrefixStrip"
 	IngressMiddleWareKey = "traefik.ingress.kubernetes.io/router.middlewares"
 )
@@ -95,30 +96,33 @@ func PatchIngressRewriteRoot(clientset *kubernetes.Clientset, opIngress *network
 		opIngress.Annotations = newAnnotatins
 	}
 	namespace := opIngress.Namespace
-	if _, ok := newAnnotatins[IngressPathStriKey]; !ok {
+	if _, ok := newAnnotatins[IngressPathStriV1Key]; !ok {
+		if _, ok := newAnnotatins[IngressPathStriKey]; !ok {
+			return
+		}
+	}
+	if newAnnotatins[IngressPathStriKey] != PathPrefixStripValue && newAnnotatins[IngressPathStriV1Key] != PathPrefixStripValue {
 		return
 	}
-	if newAnnotatins[IngressPathStriKey] == PathPrefixStripValue {
-		middleValue := newAnnotatins[IngressMiddleWareKey]
-		rewriteRoot := fmt.Sprintf("%s-rewrite-root@kubernetescrd", opIngress.Namespace)
-		if strings.Contains(middleValue, rewriteRoot) {
-			return
-		}
-		err := traefik.CreateRewriteMiddleware(namespace, "/", nil)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		if middleValue == "" {
-			middleValue = rewriteRoot
-		} else {
-			middleValue = fmt.Sprintf("%s,%s", middleValue, rewriteRoot)
-		}
-		opIngress.Annotations[IngressMiddleWareKey] = middleValue
-		_, err = clientset.NetworkingV1().Ingresses(namespace).Update(context.Background(), opIngress, metav1.UpdateOptions{})
-		if err != nil {
-			log.Println(err)
-			return
-		}
+	middleValue := newAnnotatins[IngressMiddleWareKey]
+	rewriteRoot := fmt.Sprintf("%s-rewrite-root@kubernetescrd", opIngress.Namespace)
+	if strings.Contains(middleValue, rewriteRoot) {
+		return
+	}
+	err := traefik.CreateRewriteMiddleware(namespace, "/", nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if middleValue == "" {
+		middleValue = rewriteRoot
+	} else {
+		middleValue = fmt.Sprintf("%s,%s", middleValue, rewriteRoot)
+	}
+	opIngress.Annotations[IngressMiddleWareKey] = middleValue
+	_, err = clientset.NetworkingV1().Ingresses(namespace).Update(context.Background(), opIngress, metav1.UpdateOptions{})
+	if err != nil {
+		log.Println(err)
+		return
 	}
 }
