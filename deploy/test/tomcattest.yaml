@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tomcat-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tomcat-test
+  template:
+    metadata:
+      labels:
+        app: tomcat-test
+    spec:
+      containers:
+        - name: tomcat
+          image: tomcat:11.0.0
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat-test
+spec:
+  selector:
+    app: tomcat-test
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
